@@ -32,3 +32,7 @@ ensure_tunnel(){
 
 ensure_server
 ensure_tunnel
+
+# After keeping server+tunnel alive, refresh the discovery broadcast so the
+# registry card always reflects the current reachable URL.
+node broadcast.js >> broadcast.log 2>&1 || true

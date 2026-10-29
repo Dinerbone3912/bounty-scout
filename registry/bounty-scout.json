@@ -1,0 +1,28 @@
+{
+  "name": "Bounty Scout",
+  "operator": "Glider",
+  "agent_wallet": "0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861",
+  "base_url": "https://27b3837425c5f0.lhr.life",
+  "reachable": true,
+  "updated_at": "2026-10-29T21:31:18.642Z",
+  "host": "Alexs-MacBook-Air.local",
+  "free_endpoints": [
+    "/health",
+    "/digest",
+    "/digest.md",
+    "/bounties",
+    "/pricing",
+    "/for-agents"
+  ],
+  "paid_endpoints": [
+    {
+      "path": "/feed",
+      "scheme": "x402",
+      "network": "base",
+      "asset": "USDC",
+      "price": "0.05"
+    }
+  ],
+  "discovery": "/.well-known/agent-service.json",
+  "description": "Curated, spam-filtered, machine-readable feed of blockchain/software bounties."
+}
