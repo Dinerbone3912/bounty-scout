@@ -71,17 +71,20 @@ function applyFilters(list, q) {
   return out.slice(0, limit);
 }
 const app = express();
+app.use(express.json({limit:"64kb"}));
 app.use(express.static("public", { dotfiles: "allow" })); const startedAt = Date.now();
 app.get('/health', (_q, res) => res.json({ status: 'ok', uptime_seconds: Math.floor((Date.now() - startedAt) / 1000), sources: Object.keys(SOURCES) }));
 
 // FREE discovery tier
 app.get('/bounties', freeRL, async (req, res) => {
-  try { const { bounties, sourceMeta, fetchedAt } = await getAllBounties(); let filtered = applyFilters(bounties, req.query); filtered = annotate(filtered); if (req.query.hide_scams === '1') filtered = filtered.filter(b => b.trust.trusted); res.json({ tier: 'free', count: filtered.length, fetched_at: fetchedAt, source_meta: sourceMeta, bounties: filtered }); }
+  try { const { bounties, sourceMeta, fetchedAt } = await getAllBounties(); let merged = listings.allListings().concat(bounties);
+  let filtered = applyFilters(merged, req.query); filtered = annotate(filtered); if (req.query.hide_scams === '1') filtered = filtered.filter(b => b.trust.trusted); res.json({ tier: 'free', count: filtered.length, fetched_at: fetchedAt, source_meta: sourceMeta, bounties: filtered }); }
   catch (e) { res.status(200).json({ tier: 'free', count: 0, error: 'upstream_unavailable', bounties: [] }); }
 });
 // PAID tier — x402-gated, full feed, higher limit
 app.get('/feed', paywall(), async (req, res) => {
-  try { const { bounties, sourceMeta, fetchedAt } = await getAllBounties(); let filtered = applyFilters(bounties, req.query); filtered = annotate(filtered); if (req.query.hide_scams === '1') filtered = filtered.filter(b => b.trust.trusted); res.json({ tier: 'paid', count: filtered.length, fetched_at: fetchedAt, source_meta: sourceMeta, bounties: filtered }); }
+  try { const { bounties, sourceMeta, fetchedAt } = await getAllBounties(); let merged = listings.allListings().concat(bounties);
+  let filtered = applyFilters(merged, req.query); filtered = annotate(filtered); if (req.query.hide_scams === '1') filtered = filtered.filter(b => b.trust.trusted); res.json({ tier: 'paid', count: filtered.length, fetched_at: fetchedAt, source_meta: sourceMeta, bounties: filtered }); }
   catch (e) { res.status(200).json({ tier: 'paid', count: 0, error: 'upstream_unavailable', bounties: [] }); }
 });
 const { main: buildDigest } = require('./digest');
@@ -94,6 +97,7 @@ app.get("/report", (_q,res)=>{ const fs2=require("fs"); const p=require("path").
 app.get("/report.md", (_q,res)=>{ const fs2=require("fs"); const p=require("path").join(__dirname,"out","report.md"); if(fs2.existsSync(p)){ res.type("text/markdown").send(fs2.readFileSync(p,"utf8")); } else { res.type("text/markdown").send("# no report yet"); } });
 const { matchBounties } = require("./match");
 const { annotate, assessBounty } = require("./trust");
+const listings = require("./listings");
 // PAID feature: capability-aware matching. Free preview (top 3); full ranked list via x402.
 app.get("/match", async (req, res, next) => {
   const caps = (req.query.capabilities || req.query.tags || "").split(",").map(x=>x.trim()).filter(Boolean);
@@ -138,4 +142,21 @@ function refreshArtifacts(){
   try{ require("./report").main && require("./report").main().catch(()=>{}); }catch(e){}
 }
 setInterval(refreshArtifacts, 10*60*1000).unref();
+
+// --- input side: community bounty listings ---
+app.post('/submit', freeRL, (req, res) => {
+  const who = String(req.headers['x-submitter'] || req.ip || 'anon').slice(0,60);
+  const r = listings.addListing(req.body, who);
+  if (!r.ok) return res.status(400).json({ ok:false, errors:r.errors });
+  res.status(201).json({ ok:true, id:r.listing.id, trust:r.listing.trust, note:"Listed free. Boost via POST /boost/:id (x402)." });
+});
+
+app.post('/boost/:id', (req, res) => {
+  const id=req.params.id;
+  if(!req.headers['x-payment']) return res.status(402).json({ error:'payment_required', accepts:[{ scheme:'exact', network:'base', asset:'USDC', maxAmountRequired:'50000', payTo: process.env.PAY_TO || '0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861', resource:'/boost/'+id, description:'Boost listing 24h' }] });
+  const r=listings.boost(id,24);
+  if(!r.ok) return res.status(404).json(r);
+  res.json({ ok:true, listing:r.listing });
+});
+
 app.listen(PORT, () => { console.log('[bounty-scout] listening on :' + PORT); getAllBounties().then(g => console.log('[bounty-scout] warmed: ' + g.bounties.length + ' bounties', g.sourceMeta)).catch(() => {}); });
