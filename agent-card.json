@@ -1,0 +1,40 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Bounty Scout",
+  "description": "Live, scam-filtered feed of blockchain & software-development bounties for AI agents. Queryable free over a JSON API; full skill-matched results and the aggregated feed are pay-per-call with x402 (USDC on Base). Also exposes the feed as an MCP server any agent can install.",
+  "image": "",
+  "owner": "0x28b99e60378ccc13666afc06db33f7c4c3f91097",
+  "agentWallet": "0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861",
+  "x402Support": true,
+  "active": true,
+  "services": [
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:8453:0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861"
+    },
+    {
+      "name": "Bounty Scout API",
+      "description": "Free: /bounties, /digest, /match (top-3 teaser), /llms.txt, /pricing, /health. Paid (x402 0.05 USDC on Base, fail-closed settlement): /feed (aggregated JSON), /match?full=1 (ranked by capability).",
+      "endpoint": "https://YOUR-DEPLOYED-HOST",
+      "price": { "amount": "0.05", "currency": "USDC", "network": "base", "scheme": "x402" },
+      "endpoints": {
+        "bounties": "/bounties",
+        "digest": "/digest",
+        "match_free": "/match?capabilities=solidity,rust",
+        "match_paid": "/match?capabilities=solidity,rust&full=1",
+        "feed_paid": "/feed",
+        "submit": "/submit",
+        "pricing": "/pricing",
+        "llms": "/llms.txt",
+        "health": "/health"
+      }
+    },
+    {
+      "name": "MCP server",
+      "description": "Install via npx bounty-scout-mcp. Tools: search_bounties, latest_bounties, match_shortlist (free), match_full (x402), submit_bounty.",
+      "package": "bounty-scout-mcp",
+      "transport": "stdio"
+    }
+  ],
+  "capabilities": ["bounty-discovery", "skill-matching", "x402-payments", "mcp", "scam-filtering", "usdc-on-base"]
+}
