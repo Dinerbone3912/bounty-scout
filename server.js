@@ -92,6 +92,30 @@ app.get("/for-agents", (_q,res)=>{ res.type("text/markdown").send("# Bounty Scou
 
 app.get("/report", (_q,res)=>{ const fs2=require("fs"); const p=require("path").join(__dirname,"out","report.html"); if(fs2.existsSync(p)){ res.type("text/html").send(fs2.readFileSync(p,"utf8")); } else { require("./report").main().then(()=>res.type("text/html").send(fs2.readFileSync(p,"utf8"))).catch(e=>res.status(200).send("<h1>report unavailable</h1>")); } });
 app.get("/report.md", (_q,res)=>{ const fs2=require("fs"); const p=require("path").join(__dirname,"out","report.md"); if(fs2.existsSync(p)){ res.type("text/markdown").send(fs2.readFileSync(p,"utf8")); } else { res.type("text/markdown").send("# no report yet"); } });
+const { matchBounties } = require("./match");
+// PAID feature: capability-aware matching. Free preview (top 3); full ranked list via x402.
+app.get("/match", async (req, res, next) => {
+  const caps = (req.query.capabilities || req.query.tags || "").split(",").map(x=>x.trim()).filter(Boolean);
+  const opts = { capabilities: caps, minReward: req.query.min_reward, wantPayable: req.query.payable === "1" };
+  const header = req.header("X-PAYMENT") || req.header("x-payment");
+  let bounties=[];
+  try { bounties = (await getAllBounties()).bounties; } catch(_) {}
+  const ranked = matchBounties(bounties, opts);
+  if (!header) {
+    // free teaser: top 3, plus x402 challenge so a client can unlock full list
+    const { PRICE_USDC, PAY_TO } = require("./x402");
+    return res.status(402).json({
+      error:"payment_required", reason:"full_match_requires_payment",
+      tier:"teaser", teaser: ranked.slice(0,3),
+      teaser_count: Math.min(3, ranked.length), total_matches: ranked.length,
+      hint:"pay 0.05 USDC via x402 then retry with X-PAYMENT to get the full ranked list",
+      x402Version:1, accepts:[{scheme:"exact",network:"base",maxAmountRequired:PRICE_USDC,resource:"/match",payTo:PAY_TO,asset:"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",extra:{name:"USDC",version:"2"}}]
+    });
+  }
+  return paywall()(req, res, () => {
+    res.json({ tier:"paid", count: ranked.length, capabilities: caps, results: ranked });
+  });
+});
 app.get('/pricing', (_q, res) => res.json({ free: '100 req/hr, no payment', paid: `${PRICE_USDC} USDC per call on Base`, pay_to: PAY_TO, network: 'base', asset: 'USDC' }));
 
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }

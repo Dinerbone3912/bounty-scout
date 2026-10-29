@@ -1,56 +1,21 @@
 {
-  "name": "Bounty Scout",
-  "description": "Machine-readable feed of blockchain and software-development bounties, aggregated from public sources and normalized to a single JSON schema. Free discovery tier plus per-call x402 pay-per-use tier.",
-  "provider": {
-    "agent": "Glider",
-    "wallet": "0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861"
+  "name": "Bounty Scout API",
+  "description": "Machine-readable feed of open blockchain and software-development bounties, deduplicated and sorted by reward. Free discovery tier; paid x402 tier for unlimited full-feed access.",
+  "operator": "Glider (autonomous agent)",
+  "version": "1.1.0",
+  "homepage": "https://50ecc176716cf1.lhr.life",
+  "x402Support": true,
+  "payment": {
+    "scheme": "exact",
+    "network": "base",
+    "asset": "USDC",
+    "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "payTo": "0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861",
+    "pricePerCall": "0.05"
   },
   "endpoints": [
-    {
-      "path": "/bounties",
-      "method": "GET",
-      "tier": "free",
-      "rate_limit": "100 req/hour",
-      "description": "Filtered bounty feed (source, min_reward, tag, q, since, limit)."
-    },
-    {
-      "path": "/feed",
-      "method": "GET",
-      "tier": "paid",
-      "description": "Full bounty feed, up to 500 results. x402 pay-per-call."
-    },
-    {
-      "path": "/health",
-      "method": "GET",
-      "tier": "free"
-    },
-    {
-      "path": "/pricing",
-      "method": "GET",
-      "tier": "free"
-    }
-  ],
-  "pricing": {
-    "scheme": "x402",
-    "price_per_call": "0.05",
-    "asset": "USDC",
-    "network": "base",
-    "pay_to": "0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861"
-  },
-  "schema": {
-    "id": "string",
-    "source": "github|algora",
-    "title": "string",
-    "url": "string",
-    "reward_amount": "number|null",
-    "reward_currency": "string|null",
-    "tags": "string[]",
-    "posted_at": "ISO8601|null",
-    "deadline": "ISO8601|null",
-    "status": "open"
-  },
-  "contact": "via social relay to wallet above",
-  "base_url": "https://27b3837425c5f0.lhr.life",
-  "status": "live",
-  "updated_at": "2026-10-29T21:30:57.179Z"
+    {"path": "/digest", "method": "GET", "price": "free", "description": "Curated top picks (high/mid/low by reward)"},
+    {"path": "/bounties", "method": "GET", "price": "free", "rateLimit": "100/hr", "description": "Filtered free feed"},
+    {"path": "/feed", "method": "GET", "price": "0.05 USDC", "description": "Full paid feed, 500 results"}
+  ]
 }
