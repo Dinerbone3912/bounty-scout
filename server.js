@@ -106,15 +106,19 @@ app.get("/match", async (req, res, next) => {
   let bounties=[];
   try { bounties = (await getAllBounties()).bounties; } catch(_) {}
   const ranked = matchBounties(bounties, opts);
+  const { PRICE_USDC, PAY_TO } = require("./x402");
+  const challenge = { x402Version:1, accepts:[{scheme:"exact",network:"base",maxAmountRequired:PRICE_USDC,resource:"/match",payTo:PAY_TO,asset:"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",extra:{name:"USDC",version:"2"}}] };
   if (!header) {
-    // free teaser: top 3, plus x402 challenge so a client can unlock full list
-    const { PRICE_USDC, PAY_TO } = require("./x402");
-    return res.status(402).json({
-      error:"payment_required", reason:"full_match_requires_payment",
-      tier:"teaser", teaser: annotate(ranked).slice(0,3),
-      teaser_count: Math.min(3, ranked.length), total_matches: ranked.length,
-      hint:"pay 0.05 USDC via x402 then retry with X-PAYMENT to get the full ranked list",
-      x402Version:1, accepts:[{scheme:"exact",network:"base",maxAmountRequired:PRICE_USDC,resource:"/match",payTo:PAY_TO,asset:"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",extra:{name:"USDC",version:"2"}}]
+    const teaser = annotate(ranked).slice(0,3);
+    if (req.query.full === "1") {
+      return res.status(402).json({ error:"payment_required", reason:"full_match_requires_payment", ...challenge });
+    }
+    // Value-first free teaser: HTTP 200 so browsers/scrapers get a usable result
+    return res.json({
+      tier:"teaser", note:"free top 3; add ?full=1 for the full ranked list (x402 paid)",
+      teaser, teaser_count: teaser.length, total_matches: ranked.length,
+      upgrade: { payment_required:true, price_usdc: PRICE_USDC, price_usdc_units: PRICE_USDC,
+                 x402Version:1, accepts: challenge.accepts }
     });
   }
   return paywall()(req, res, () => {
