@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "bounty-scout": {
+      "command": "npx",
+      "args": ["-y", "bounty-scout-mcp"],
+      "env": { "SCOUT_BASE": "https://YOUR-DEPLOYED-HOST" }
+    }
+  }
+}

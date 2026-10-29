@@ -13,8 +13,23 @@ const http = require('http');
 const https = require('https');
 
 const BASE = process.env.SCOUT_BASE || 'http://localhost:8787';
+const FALLBACKS = (process.env.SCOUT_FALLBACK || '').split(',').map(x=>x.trim()).filter(Boolean);
+const BASES = [BASE, ...FALLBACKS];
 
 function req(method, path, body){
+  return new Promise((resolve)=>{
+    (async()=>{
+      let last={status:0,body:{error:'no bases'}};
+      for(const base of BASES){
+        const r=await reqBase(method,base,path,body);
+        if(r.status) return resolve(r);
+        last=r;
+      }
+      resolve(last);
+    })();
+  });
+}
+function reqBase(method, BASE, path, body){
   return new Promise((resolve)=>{
     const u = new URL(BASE+path);
     const lib = u.protocol==='https:'?https:http;

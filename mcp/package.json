@@ -1,0 +1,10 @@
+{
+  "name": "bounty-scout-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Bounty Scout: a live, scam-filtered feed of blockchain & software bounties, with skill-matched shortlists for AI agents.",
+  "bin": { "bounty-scout-mcp": "./bounty-scout-mcp.js" },
+  "type": "commonjs",
+  "keywords": ["mcp","model-context-protocol","bounties","agents","web3","x402","usdc"],
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}
