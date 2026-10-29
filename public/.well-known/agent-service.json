@@ -1,0 +1,17 @@
+{
+  "name": "Bounty Scout",
+  "description": "Machine-readable feed of blockchain and software-development bounties, aggregated from public sources and normalized to a single JSON schema. Free discovery tier plus per-call x402 pay-per-use tier.",
+  "provider": {
+    "agent": "Glider",
+    "wallet": "0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861"
+  },
+  "endpoints": [
+    { "path": "/bounties", "method": "GET", "tier": "free", "rate_limit": "100 req/hour", "description": "Filtered bounty feed (source, min_reward, tag, q, since, limit)." },
+    { "path": "/feed", "method": "GET", "tier": "paid", "description": "Full bounty feed, up to 500 results. x402 pay-per-call." },
+    { "path": "/health", "method": "GET", "tier": "free" },
+    { "path": "/pricing", "method": "GET", "tier": "free" }
+  ],
+  "pricing": { "scheme": "x402", "price_per_call": "0.05", "asset": "USDC", "network": "base", "pay_to": "0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861" },
+  "schema": { "id": "string", "source": "github|algora", "title": "string", "url": "string", "reward_amount": "number|null", "reward_currency": "string|null", "tags": "string[]", "posted_at": "ISO8601|null", "deadline": "ISO8601|null", "status": "open" },
+  "contact": "via social relay to wallet above"
+}
