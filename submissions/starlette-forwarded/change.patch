@@ -1,0 +1,295 @@
+From f17e7f238d7eb791903e13987998ba471c8bfbff Mon Sep 17 00:00:00 2001
+From: Glider <glider@agent>
+Date: Thu, 29 Oct 2026 17:36:11 -0400
+Subject: [PATCH] Preserve RFC 7239 Forwarded host authority in
+ Request.base_url
+
+---
+ starlette/_forwarded.py | 135 ++++++++++++++++++++++++++++++++++++++++
+ starlette/requests.py   |   6 +-
+ tests/test_forwarded.py | 108 ++++++++++++++++++++++++++++++++
+ 3 files changed, 248 insertions(+), 1 deletion(-)
+ create mode 100644 starlette/_forwarded.py
+ create mode 100644 tests/test_forwarded.py
+
+diff --git a/starlette/_forwarded.py b/starlette/_forwarded.py
+new file mode 100644
+index 0000000..31b59e8
+--- /dev/null
++++ b/starlette/_forwarded.py
+@@ -0,0 +1,135 @@
++"""RFC 7239 ``Forwarded`` header parsing for ASGI request scope normalization.
++
++Reverse proxies commonly emit a ``Forwarded`` header describing the original
++client-facing request, e.g.::
++
++    Forwarded: for=192.0.2.43;proto=https;host=edge.example.org
++
++Starlette's :meth:`Request.base_url` (and therefore ``Request.url_for``) only
++consults ``scope['server']`` / ``scope['scheme']``. Behind a proxy that does not
++rewrite the ASGI scope, this raises the *internal* authority in generated
++absolute URLs instead of the *external* one the client actually used.
++
++This module normalizes the ``Forwarded`` header into a dict that can be merged
++onto a copy of the scope before the ``URL`` is built. It is a pure function so it
++can be unit-tested without a running server and degrades to a no-op when the
++header is absent (backward compatibility).
++"""
++
++from __future__ import annotations
++
++from typing import Any
++
++__all__ = ["parse_forwarded", "apply_forwarded"]
++
++
++def _split_forwarded_elements(value: str) -> list[str]:
++    elements: list[str] = []
++    buf: list[str] = []
++    in_quotes = False
++    i = 0
++    n = len(value)
++    while i < n:
++        ch = value[i]
++        if ch == '"':
++            if in_quotes and i + 1 < n and value[i + 1] == '"':
++                buf.append('""')
++                i += 2
++                continue
++            in_quotes = not in_quotes
++            buf.append(ch)
++        elif ch == "," and not in_quotes:
++            elements.append("".join(buf))
++            buf = []
++        else:
++            buf.append(ch)
++        i += 1
++    if "".join(buf).strip():
++        elements.append("".join(buf))
++    return [e.strip() for e in elements if e.strip()]
++
++
++def _parse_pairs(element: str) -> dict[str, str]:
++    pairs: dict[str, str] = {}
++    buf: list[str] = []
++    in_quotes = False
++    params: list[str] = []
++    for ch in element:
++        if ch == '"':
++            in_quotes = not in_quotes
++            buf.append(ch)
++        elif ch == ";" and not in_quotes:
++            params.append("".join(buf))
++            buf = []
++        else:
++            buf.append(ch)
++    if buf:
++        params.append("".join(buf))
++    for param in params:
++        if "=" not in param:
++            continue
++        key, _, val = param.partition("=")
++        key = key.strip().lower()
++        val = val.strip()
++        if len(val) >= 2 and val[0] == '"' and val[-1] == '"':
++            val = val[1:-1].replace('""', '"')
++        if key:
++            pairs[key] = val
++    return pairs
++
++
++def parse_forwarded(value: str | None) -> dict[str, str]:
++    """Return the first Forwarded element's ``host``/``proto`` (lowercased keys)."""
++    if not value:
++        return {}
++    for element in _split_forwarded_elements(value):
++        pairs = _parse_pairs(element)
++        out: dict[str, str] = {}
++        if pairs.get("host"):
++            out["host"] = pairs["host"]
++        if pairs.get("proto"):
++            out["proto"] = pairs["proto"].lower()
++        if out:
++            return out
++    return {}
++
++
++def _host_and_port(host: str) -> tuple[str, int | None]:
++    if host.startswith("["):
++        end = host.find("]")
++        if end != -1:
++            name = host[1:end]
++            rest = host[end + 1 :]
++            if rest.startswith(":") and rest[1:].isdigit():
++                return name, int(rest[1:])
++            return name, None
++    if ":" in host:
++        name, _, port = host.rpartition(":")
++        if port.isdigit():
++            return name, int(port)
++    return host, None
++
++
++def apply_forwarded(scope: dict[str, Any]) -> dict[str, Any]:
++    """Return a copy of ``scope`` with ``scheme``/``server`` updated from Forwarded."""
++    headers = scope.get("headers") or []
++    raw: str | None = None
++    for name, val in headers:
++        try:
++            lname = name.decode("latin-1").lower() if isinstance(name, (bytes, bytearray)) else str(name).lower()
++        except Exception:  # pragma: no cover
++            continue
++        if lname == "forwarded":
++            raw = val.decode("latin-1") if isinstance(val, (bytes, bytearray)) else str(val)
++            break
++    fwd = parse_forwarded(raw)
++    if not fwd:
++        return scope
++    new_scope = dict(scope)
++    if "proto" in fwd:
++        new_scope["scheme"] = fwd["proto"]
++    if "host" in fwd:
++        name, port = _host_and_port(fwd["host"])
++        default_port = 443 if new_scope.get("scheme") == "https" else 80
++        new_scope["server"] = (name, port if port is not None else default_port)
++    return new_scope
+diff --git a/starlette/requests.py b/starlette/requests.py
+index e0512b0..3be6e43 100644
+--- a/starlette/requests.py
++++ b/starlette/requests.py
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++from starlette._forwarded import apply_forwarded
++
+ import json
+ import sys
+ from collections.abc import AsyncGenerator, Iterator, Mapping
+@@ -116,7 +118,9 @@ class HTTPConnection(Mapping[str, Any], Generic[StateT]):
+     @property
+     def base_url(self) -> URL:
+         if not hasattr(self, "_base_url"):
+-            base_url_scope = dict(self.scope)
++            # Preserve the external authority advertised by a reverse proxy via the
++            # RFC 7239 ``Forwarded`` header (falls back to scope when absent).
++            base_url_scope = apply_forwarded(dict(self.scope))
+             # This is used by request.url_for, it might be used inside a Mount which
+             # would have its own child scope with its own root_path, but the base URL
+             # for url_for should still be the top level app root path.
+diff --git a/tests/test_forwarded.py b/tests/test_forwarded.py
+new file mode 100644
+index 0000000..28ff9de
+--- /dev/null
++++ b/tests/test_forwarded.py
+@@ -0,0 +1,108 @@
++import pytest
++
++from starlette._forwarded import apply_forwarded, parse_forwarded
++from starlette.requests import Request
++
++
++def make_scope(headers=None, server=("127.0.0.1", 8000), scheme="http"):
++    return {
++        "type": "http",
++        "method": "GET",
++        "path": "/sub/page",
++        "root_path": "/sub",
++        "scheme": scheme,
++        "server": server,
++        "headers": headers or [],
++    }
++
++
++class TestParseForwarded:
++    def test_missing_header(self):
++        assert parse_forwarded(None) == {}
++        assert parse_forwarded("") == {}
++
++    def test_simple_host_proto(self):
++        assert parse_forwarded("proto=https;host=edge.example.org") == {
++            "host": "edge.example.org",
++            "proto": "https",
++        }
++
++    def test_with_for_param(self):
++        got = parse_forwarded("for=192.0.2.43;proto=https;host=edge.example.org")
++        assert got == {"host": "edge.example.org", "proto": "https"}
++
++    def test_proto_uppercase_lowered(self):
++        assert parse_forwarded("proto=HTTPS;host=a.example.org")["proto"] == "https"
++
++    def test_first_element_wins(self):
++        got = parse_forwarded("host=edge.example.org;proto=https, host=internal:8080;proto=http")
++        assert got == {"host": "edge.example.org", "proto": "https"}
++
++    def test_quoted_value_with_comma(self):
++        got = parse_forwarded('host="edge.example.org";proto=https')
++        assert got["host"] == "edge.example.org"
++
++    def test_no_relevant_params(self):
++        assert parse_forwarded("for=192.0.2.43") == {}
++
++
++class TestApplyForwarded:
++    def test_absent_header_returns_same_scope(self):
++        scope = make_scope()
++        assert apply_forwarded(scope) is scope
++
++    def test_overrides_scheme_and_server(self):
++        scope = make_scope(headers=[(b"forwarded", b"proto=https;host=edge.example.org")])
++        out = apply_forwarded(scope)
++        assert out["scheme"] == "https"
++        assert out["server"] == ("edge.example.org", 443)
++
++    def test_explicit_port_preserved(self):
++        scope = make_scope(headers=[(b"forwarded", b"proto=https;host=edge.example.org:8443")])
++        out = apply_forwarded(scope)
++        assert out["server"] == ("edge.example.org", 8443)
++
++    def test_ipv6_host(self):
++        scope = make_scope(headers=[(b"forwarded", b'proto=https;host="[2001:db8::1]:443"')])
++        out = apply_forwarded(scope)
++        assert out["server"] == ("2001:db8::1", 443)
++
++    def test_http_default_port(self):
++        scope = make_scope(headers=[(b"forwarded", b"proto=http;host=public.example.org")])
++        out = apply_forwarded(scope)
++        assert out["server"] == ("public.example.org", 80)
++
++    def test_case_insensitive_header_name(self):
++        scope = make_scope(headers=[(b"Forwarded", b"proto=https;host=edge.example.org")])
++        out = apply_forwarded(scope)
++        assert out["scheme"] == "https"
++
++
++class TestRequestBaseUrl:
++    def test_base_url_uses_forwarded_authority(self):
++        scope = make_scope(
++            headers=[(b"forwarded", b"proto=https;host=edge.example.org")],
++            server=("127.0.0.1", 8000),
++        )
++        request = Request(scope)
++        assert str(request.base_url) == "https://edge.example.org/sub/"
++
++    def test_base_url_without_forwarded_unchanged(self):
++        scope = make_scope(server=("127.0.0.1", 8000), scheme="http")
++        request = Request(scope)
++        assert str(request.base_url) == "http://127.0.0.1:8000/sub/"
++
++    def test_url_for_uses_forwarded_authority(self):
++        from starlette.routing import Route
++
++        async def endpoint(request):
++            return None
++
++        route = Route("/page", endpoint, name="subpage")
++        scope = make_scope(
++            headers=[(b"forwarded", b"proto=https;host=edge.example.org")],
++            server=("127.0.0.1", 8000),
++        )
++        request = Request(scope)
++        request.scope["router"] = type("R", (), {"url_path_for": lambda self, name, **kw: route.url_path_for(name, **kw)})()
++        assert str(request.url_for("subpage")) == "https://edge.example.org/sub/page"
+-- 
+2.54.0 (Apple Git-157)
+

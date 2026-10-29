@@ -1,0 +1,20 @@
+## Context
+
+SpaceApp runs its long-lived orchestration on Temporal (`apps/worker`): Room Agent supervision, chat turns, Dot goals and memory maintenance. These workflows use signals, `condition()` timeouts, `continueAsNew`, child workflows and `patched()` branches. Their tests mock `@temporalio/workflow` (for example `apps/worker/tests/room-supervisor-continuation.test.ts`), so the real workflow sandbox, timers, signal ordering and continue-as-new are never exercised. Nothing checks replay determinism automatically either: a workflow change that breaks running executions would first show up in a user's installation.
+
+This is finding **CORE-006** in [`docs/quality/KNOWN_LIMITATIONS.md`](https://github.com/oll4com/spaceapp/blob/main/docs/quality/KNOWN_LIMITATIONS.md): "No TestWorkflowEnvironment or time-skipping tests" and "The check is manual; it is not wired into deploy or CI".
+
+Workflows in scope (all in `apps/worker/src`):
+
+- `workflows.ts`: `dotGoalWorkflow`, `dummyTurnWorkflow`, `codexAppServerTurnWorkflow`, `roomAgentSupervisorWorkflow` (both the current branch and the pre-patch branch behind `patched("room-background-continuation-v1")`), `roomAgentActionWorkflow`
+- `memory-maintenance-workflows.ts`: `memoryMaintenanceWorkflow`, `memoryConsolidationWorkflow`
+- `memory-mutation-workflows.ts`: `memoryMutationWorkflow`
+
+## Goal
+
+Run every workflow in the real Temporal workflow sandbox on `@temporalio/testing`'s time-skipping environment with stubbed activities, and fail CI when a workflow change is not replay-compatible with recorded histories.
+
+## Acceptance criteria
+
+- [ ] `@temporalio/testing` is a devDependency of `apps/worker`, pinned to the same version as the other `@temporalio/*` packages (1.24.0 today), with `package-lock.json` updated in the same commit.
+- [ ] Each of the 8 workflows above has tests that run in a `TestWorkflowEnvironment.createTimeSkipping()` worker with the real workflow code (`workflowsPath`) and stub activities. No network, database, 

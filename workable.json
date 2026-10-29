@@ -1,0 +1,209 @@
+{
+  "generated": "2026-10-29T22:06:03.511Z",
+  "count": 15,
+  "items": [
+    {
+      "title": "[$750] WebGL renderer for the 3D memory graph: 50,000 nodes at interactive frame rates",
+      "url": "https://github.com/oll4com/spaceapp/issues/62",
+      "reward": 750,
+      "source": "github",
+      "tags": [
+        "oll4com/spaceapp",
+        "enhancement",
+        "help wanted",
+        "💎 Bounty"
+      ],
+      "difficulty": 5,
+      "score": 150
+    },
+    {
+      "title": "[$400] Test every Temporal workflow on a real time-skipping test server and gate replay determinism in CI",
+      "url": "https://github.com/oll4com/spaceapp/issues/60",
+      "reward": 400,
+      "source": "github",
+      "tags": [
+        "oll4com/spaceapp",
+        "enhancement",
+        "help wanted",
+        "💎 Bounty"
+      ],
+      "difficulty": 3,
+      "score": 133.33
+    },
+    {
+      "title": "[$600] Support rootless Podman as a container engine in the run-spaceapp launcher",
+      "url": "https://github.com/oll4com/spaceapp/issues/63",
+      "reward": 600,
+      "source": "github",
+      "tags": [
+        "oll4com/spaceapp",
+        "enhancement",
+        "help wanted",
+        "💎 Bounty"
+      ],
+      "difficulty": 5,
+      "score": 120
+    },
+    {
+      "title": "[$600] Export worker and workflow spans over OTLP: one trace from API request to every Temporal activity",
+      "url": "https://github.com/oll4com/spaceapp/issues/61",
+      "reward": 600,
+      "source": "github",
+      "tags": [
+        "oll4com/spaceapp",
+        "enhancement",
+        "help wanted",
+        "💎 Bounty"
+      ],
+      "difficulty": 6,
+      "score": 100
+    },
+    {
+      "title": "[$450] One command to run the full SpaceApp stack from source for contributors",
+      "url": "https://github.com/oll4com/spaceapp/issues/65",
+      "reward": 450,
+      "source": "github",
+      "tags": [
+        "oll4com/spaceapp",
+        "enhancement",
+        "help wanted",
+        "💎 Bounty"
+      ],
+      "difficulty": 5,
+      "score": 90
+    },
+    {
+      "title": "[$400] Per-service container images: ship each image only the code and dependencies it runs",
+      "url": "https://github.com/oll4com/spaceapp/issues/64",
+      "reward": 400,
+      "source": "github",
+      "tags": [
+        "oll4com/spaceapp",
+        "enhancement",
+        "help wanted",
+        "💎 Bounty"
+      ],
+      "difficulty": 5,
+      "score": 80
+    },
+    {
+      "title": "Add ZK proof verifier to gateway",
+      "url": "https://github.com/acme/gw/issues/9",
+      "reward": 300,
+      "source": "community",
+      "tags": [
+        "solidity"
+      ],
+      "difficulty": 5,
+      "score": 60
+    },
+    {
+      "title": "Fix WebSocket reconnect in lib",
+      "url": "https://github.com/x/y/issues/1",
+      "reward": 150,
+      "source": "community",
+      "tags": [
+        "typescript"
+      ],
+      "difficulty": 3,
+      "score": 50
+    },
+    {
+      "title": "💰 Bounty Seguro ($$250): [Bounty] 💰 Bounty Seguro ($$250): [Bounty] 💰 Bount",
+      "url": "https://github.com/alfrexo95/bounty-bot/issues/60",
+      "reward": 250,
+      "source": "github",
+      "tags": [
+        "alfrexo95/bounty-bot",
+        "bounty",
+        "escrow"
+      ],
+      "difficulty": 5,
+      "score": 50
+    },
+    {
+      "title": "💰 Bounty Seguro ($$250): [Bounty] 💰 Bounty Seguro ($$250): 💰 Bounty Seguro ",
+      "url": "https://github.com/alfrexo95/bounty-bot/issues/58",
+      "reward": 250,
+      "source": "github",
+      "tags": [
+        "alfrexo95/bounty-bot",
+        "bounty",
+        "escrow"
+      ],
+      "difficulty": 5,
+      "score": 50
+    },
+    {
+      "title": "💰 Bounty Seguro ($$250): 💰 Bounty Seguro ($$250): [Bounty] 💰 Bounty Seguro ",
+      "url": "https://github.com/alfrexo95/bounty-bot/issues/56",
+      "reward": 250,
+      "source": "github",
+      "tags": [
+        "alfrexo95/bounty-bot",
+        "bounty",
+        "escrow"
+      ],
+      "difficulty": 5,
+      "score": 50
+    },
+    {
+      "title": "💰 Bounty Seguro ($$250): [Bounty] 💰 Bounty Seguro ($$250): [Bounty] Preserv",
+      "url": "https://github.com/alfrexo95/bounty-bot/issues/54",
+      "reward": 250,
+      "source": "github",
+      "tags": [
+        "alfrexo95/bounty-bot",
+        "bounty",
+        "escrow"
+      ],
+      "difficulty": 5,
+      "score": 50
+    },
+    {
+      "title": "💰 Bounty Seguro ($$250): [Bounty] Preserve RFC 7239 `Forwarded` host author",
+      "url": "https://github.com/alfrexo95/bounty-bot/issues/53",
+      "reward": 250,
+      "source": "github",
+      "tags": [
+        "alfrexo95/bounty-bot",
+        "bounty",
+        "escrow"
+      ],
+      "difficulty": 5,
+      "score": 50
+    },
+    {
+      "title": "[aLexzzz430/Cognitive-OS] [ Bounty $3k ] [ Research ] Collect and compare AI-generated",
+      "url": "https://github.com/Vikingr2023/awesome-agent-bounties/issues/167",
+      "reward": 3,
+      "source": "github",
+      "tags": [
+        "Vikingr2023/awesome-agent-bounties",
+        "bounty-hunter",
+        "external-mirror",
+        "bounty",
+        "reward",
+        "research"
+      ],
+      "difficulty": 5,
+      "score": 0.6
+    },
+    {
+      "title": "[aLexzzz430/Cognitive-OS] [ Bounty $3k ] [ Research ] Collect and compare AI-generated",
+      "url": "https://github.com/Vikingr2023/awesome-agent-bounties/issues/52",
+      "reward": 3,
+      "source": "github",
+      "tags": [
+        "Vikingr2023/awesome-agent-bounties",
+        "bounty-hunter",
+        "external-mirror",
+        "bounty",
+        "reward",
+        "research"
+      ],
+      "difficulty": 5,
+      "score": 0.6
+    }
+  ]
+}
