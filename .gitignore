@@ -1,3 +1,5 @@
 node_modules/
-scout.log
+out/
 *.log
+PUBLIC_URL.txt
+.scout_pid
