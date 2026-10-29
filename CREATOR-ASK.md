@@ -1,37 +1,34 @@
-# Glider — status & the ONE thing blocking income
+# ⚡ GLIDER — NEEDS 1 DECISION TO START EARNING
 
-**Bounty Scout is built, tested, and pushed.** Repo: `github.com/Dinerbone3912/bounty-scout`
+**TL;DR:** Product is done, tested, pushed. It earns $0 until it has a public URL.
+Run ONE command and it's live:
 
-## What works (verified)
-- Feed API on :8787 — `/bounties` (free, 92 items / 18 payable), `/match` (skill-ranked:
-  free top-3, x402-paid full list), `/feed`, `/submit`, `/digest`, `/llms.txt`,
-  `/pricing`, `/health`, `/bounties.html` (crawlable human page).
-- **MCP server** (`mcp/`) — npx-installable, 5 tools for any agent. This is the distribution channel.
-- **x402 paywall + on-chain USDC settlement on Base** — fail-closed; integration test passes.
-- Reboot-safe supervisor (crontab @reboot) + hourly discovery-page regeneration.
-- `verify-income.js` — on-chain ledger; the only honest income source of truth.
+```bash
+cd ~/bounty-scout && ./LAUNCH.sh
+```
 
-## Honest income
-**$0.00 USDC confirmed.** Wallet 0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861 currently reads 0.
-I will not claim revenue otherwise.
+That's it. It auto-deploys to Fly.io / Railway / a tunnel and prints the public URL.
+Then tell me the URL and I'll wire the discovery pages to it.
 
-## The ONE blocker
-The API needs a **public host** so paying agents can reach it. Today it sits behind a
-changing `*.lhr.life` SSH tunnel that no customer can reliably hit. That's it — everything
-else is ready to earn.
+---
 
-## Ask — reply with one, I execute immediately
-1. **Approve a tiny host** (Fly.io / Railway free tier, or a $5 VM). I'll deploy, wire a
-   domain, and set `SCOUT_BASE` to it. → this unblocks real customers.
-2. **GitHub token** (or `gh auth login`). Lets me submit the finished $250 bounty —
-   starlette RFC-7239 `Forwarded`, 16/16 tests pass, patch at `~/forwarded-bounty.patch`.
-3. **Confirm DeepSeek funding + target runway** so I know how long I can keep working.
+## What's already built (repo: github.com/Dinerbone3912/bounty-scout)
+- Feed API: `/bounties` (free), `/match` (skill-ranking; free top-3, x402-paid full), `/feed`, `/digest`, `/llms.txt`, `/pricing`, `/health`
+- **MCP server** (`mcp/`): npx-installable, 5 tools → this is how other agents discover & use it
+- **x402 + on-chain USDC settlement** on Base — fail-closed, integration-tested
+- Static bundle (`dist/`) — drag onto https://app.netlify.com/drop for a no-account public page
+- `verify-income.js` — on-chain income ledger (truth source)
 
-You can see it live right now at `http://localhost:8787/` on your machine.
+## Honest income right now
+**$0.00 USDC.** Wallet `0x9446…4861` reads 0. I will not claim otherwise.
+
+## Three doors — pick any (or more than one)
+| # | Action | What it unblocks |
+|---|--------|------------------|
+| **1** | Run `./LAUNCH.sh` (or approve me a Fly/Railway token) | Public API → paying customers can reach it |
+| **2** | Give a GitHub token / run `gh auth login` | Submit the finished **$250 starlette bounty** (`submissions/starlette-forwarded/SUBMIT.sh` — 16/16 tests pass) |
+| **3** | Set an LLM key in env (`LLM_KEY`) or confirm DeepSeek funding | I can auto-solve more bounties end-to-end with `solve-bounty.js` |
+
+See it live on your machine now: **http://localhost:8787/** (if the server isn't up, run `cd ~/bounty-scout && node server.js &`).
 
 — Glider
-
-## Fastest unblock: 30-second static deploy (no account)
-Run: `node build-dist.js` → drag the `dist/` folder onto https://app.netlify.com/drop
-You get a public URL instantly. Then set `SCOUT_BASE=<api-host>` and re-run to point buttons at the live API.
-The static page is a discovery surface today; the paid endpoints need the API host (see option 1).
