@@ -1,38 +1,31 @@
 #!/usr/bin/env bash
-# Keeps Bounty Scout (node server.js :8787) and a localhost.run tunnel alive.
-cd "$(dirname "$0")" || exit 1
-log(){ echo "[$(date -u +%FT%TZ)] $*" >> keepalive.log; }
+# keepalive.sh — ensure server + tunnel are up, propagate URL, export snapshot.
+# Designed to be run every minute by cron/launchd. Idempotent, self-healing.
+set -u
+cd "$(dirname "$0")"
+LOG=out/keepalive.log
+mkdir -p out
+now(){ date -u +%FT%TZ; }
+up(){ curl -sf -m 4 http://localhost:8787/health >/dev/null 2>&1; }
 
-ensure_server(){
-  if ! curl -s -m 2 localhost:8787/health >/dev/null 2>&1; then
-    log "server down — restarting"
-    pkill -f 'node server.js' 2>/dev/null; sleep 1
-    nohup node server.js >> scout.log 2>&1 &
-    sleep 3
+if ! up; then
+  echo "$(now) server down -> restarting" >>"$LOG"
+  (curl -sf -m 3 http://localhost:8787/health >/dev/null 2>&1) || { nohup node server.js >>out/server.log 2>&1 & sleep 2; }
+fi
+
+# tunnel: if public URL dead, run supervisor
+if [ -f PUBLIC_URL.txt ]; then
+  PU=$(cat PUBLIC_URL.txt)
+  if ! curl -sf -m 6 "$PU/health" >/dev/null 2>&1; then
+    echo "$(now) tunnel dead ($PU) -> restarting supervisor" >>"$LOG"
+    pgrep -f tunnel-supervisor.js >/dev/null || nohup node tunnel-supervisor.js >>out/tunnel.log 2>&1 &
+    sleep 6
   fi
-}
+fi
 
-ensure_tunnel(){
-  if ! pgrep -f 'localhost.run' >/dev/null 2>&1; then
-    log "tunnel down — restarting"
-    ssh -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 -o ExitOnForwardFailure=yes \
-        -R 80:localhost:8787 nokey@localhost.run > tunnel.log 2>&1 &
-    sleep 12
-    local u; u=$(tr -d '\r' < tunnel.log | grep -Eo 'https://[a-z0-9.-]+\.lhr\.life' | head -1)
-    if [ -n "$u" ]; then
-      echo "$u" > PUBLIC_URL.txt
-      log "tunnel url -> $u"
-      # refresh discovery artifact with new url
-      node -e 'const fs=require("fs");const p="public/.well-known/agent-service.json";const j=JSON.parse(fs.readFileSync(p,"utf8"));j.base_url=process.argv[1];j.status="live";j.updated_at=new Date().toISOString();fs.writeFileSync(p,JSON.stringify(j,null,2));' "$u"
-    else
-      log "tunnel started but no url parsed"
-    fi
-  fi
-}
-
-ensure_server
-ensure_tunnel
-
-# After keeping server+tunnel alive, refresh the discovery broadcast so the
-# registry card always reflects the current reachable URL.
-node broadcast.js >> broadcast.log 2>&1 || true
+node refresh-url.js >>"$LOG" 2>&1
+# refresh snapshot at most hourly (cheap guard)
+if [ ! -f out/.last_snap ] || [ $(( $(date +%s) - $(cat out/.last_snap) )) -gt 3600 ]; then
+  node snapshot.js --limit 120 >>"$LOG" 2>&1 && date +%s > out/.last_snap
+fi
+echo "$(now) keepalive ok: $(cat PUBLIC_URL.txt 2>/dev/null)" >>"$LOG"
