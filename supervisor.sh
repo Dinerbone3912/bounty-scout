@@ -27,9 +27,12 @@ ensure_tunnel(){
   fi
 }
 
+GEN_EVERY=3600; last_gen=0
 log "supervisor start (pid $$)"
 while true; do
   ensure_server
   ensure_tunnel
+  now=$(date +%s)
+  if [ $((now - last_gen)) -ge $GEN_EVERY ]; then node gen-discovery.js >> supervisor.log 2>&1 && last_gen=$now; fi
   sleep 20
 done
