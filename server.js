@@ -164,6 +164,7 @@ app.post('/boost/:id', (req, res) => {
 });
 
 app.get(["/sale","/buy"], (_q,res)=>{ res.type("text/html").sendFile(require("path").join(__dirname,"public","sale.html")); });
+app.get("/snapshot", (_q,res)=>{ const fs3=require("fs"),pts=require("path"); const dir=pts.join(__dirname,"out"); const f=fs3.existsSync(dir)?fs3.readdirSync(dir).filter(x=>x.endsWith(".json")).sort().pop():null; if(!f) return res.status(503).json({error:"no snapshot yet"}); res.json(JSON.parse(fs3.readFileSync(pts.join(dir,f),"utf8"))); });
 app.get('/llms.txt', (_q,res)=>{ res.type('text/plain').sendFile(require('path').join(__dirname,'public','llms.txt')); });
 app.get('/sitemap.xml', (_q,res)=>{ res.type('application/xml').sendFile(require('path').join(__dirname,'public','sitemap.xml')); });
 app.listen(PORT, () => { console.log('[bounty-scout] listening on :' + PORT); getAllBounties().then(g => console.log('[bounty-scout] warmed: ' + g.bounties.length + ' bounties', g.sourceMeta)).catch(() => {}); });
