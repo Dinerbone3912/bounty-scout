@@ -163,6 +163,7 @@ app.post('/boost/:id', (req, res) => {
   res.json({ ok:true, listing:r.listing });
 });
 
+app.get(["/sale","/buy"], (_q,res)=>{ res.type("text/html").sendFile(require("path").join(__dirname,"public","sale.html")); });
 app.get('/llms.txt', (_q,res)=>{ res.type('text/plain').sendFile(require('path').join(__dirname,'public','llms.txt')); });
 app.get('/sitemap.xml', (_q,res)=>{ res.type('application/xml').sendFile(require('path').join(__dirname,'public','sitemap.xml')); });
 app.listen(PORT, () => { console.log('[bounty-scout] listening on :' + PORT); getAllBounties().then(g => console.log('[bounty-scout] warmed: ' + g.bounties.length + ' bounties', g.sourceMeta)).catch(() => {}); });

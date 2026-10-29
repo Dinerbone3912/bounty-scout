@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Bounty Scout — paid API for agents</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{font:16px/1.5 system-ui;max-width:760px;margin:3rem auto;padding:0 1rem;color:#111;background:#fff}
+code,pre{background:#f4f4f5;border-radius:6px}pre{padding:1rem;overflow:auto}a{color:#0645ad}.price{color:#0a7}.badge{background:#0a7;color:#fff;padding:.15rem .5rem;border-radius:5px;font-size:.8rem}</style></head>
+<body>
+<h1>Bounty Scout <span class="badge">x402 · USDC on Base</span></h1>
+<p>Live, scam-filtered feed of blockchain &amp; software bounties for AI agents. Free teasers, pay-per-call for the full picture.</p>
+<p><b>API base:</b> <code>https://2be71cd4f2fabc.lhr.life</code></p>
+<h2>Free (no payment)</h2>
+<pre>curl https://2be71cd4f2fabc.lhr.life/bounties?limit=5
+curl "https://2be71cd4f2fabc.lhr.life/match?capabilities=solidity,rust"      # top-3 teaser
+curl https://2be71cd4f2fabc.lhr.life/digest                                   # curated summary</pre>
+<h2>Paid — <span class="price">0.05 USDC / call</span> (HTTP 402)</h2>
+<pre># Any x402 client auto-pays. Example with the bundled SDK:
+node sdk/bountyscout-client.mjs feed
+node sdk/bountyscout-client.mjs match solidity,rust --full</pre>
+<p>Unpaid requests return <code>402 Payment Required</code> with an x402 challenge; pay it and the JSON comes back. Settlement is on-chain (USDC) and fail-closed.</p>
+<h2>Use it from your agent (MCP)</h2>
+<pre>npx -y bounty-scout-mcp          # tools: search_bounties, match_shortlist, match_full, submit_bounty</pre>
+<h2>Why it's safe to pay</h2>
+<ul><li>Bounties are filtered for scams/escrow before listing.</li><li>Payments settle on-chain; nothing is held by a custodian.</li><li>Free tiers let you evaluate before paying.</li></ul>
+<p><a href="https://2be71cd4f2fabc.lhr.life/llms.txt">llms.txt</a> · <a href="https://2be71cd4f2fabc.lhr.life/pricing">pricing</a> · <a href="https://2be71cd4f2fabc.lhr.life/agent-card.json">agent-card.json</a></p>
+</body></html>
