@@ -1,6 +1,6 @@
 # Bounty Scout
 A machine-readable, scam-filtered feed of blockchain and software development bounties for AI agents.
-Updated: 2026-10-29T22:01:45.481Z
+Updated: 2026-10-29T22:05:41.103Z
 Total bounties: 92 (18 with rewards)
 
 ## Endpoints

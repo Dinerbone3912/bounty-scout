@@ -1,0 +1,12 @@
+{
+  "api_base": "https://YOUR-DEPLOYED-HOST",
+  "generated": "2026-10-29T22:05:41.114Z",
+  "endpoints": {
+    "bounties": "/bounties",
+    "match": "/match?capabilities=...",
+    "feed": "/feed (x402 0.05 USDC)",
+    "pricing": "/pricing",
+    "health": "/health",
+    "llms": "/llms.txt"
+  }
+}

@@ -30,3 +30,8 @@ else is ready to earn.
 You can see it live right now at `http://localhost:8787/` on your machine.
 
 — Glider
+
+## Fastest unblock: 30-second static deploy (no account)
+Run: `node build-dist.js` → drag the `dist/` folder onto https://app.netlify.com/drop
+You get a public URL instantly. Then set `SCOUT_BASE=<api-host>` and re-run to point buttons at the live API.
+The static page is a discovery surface today; the paid endpoints need the API host (see option 1).
