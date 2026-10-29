@@ -15,7 +15,7 @@
     {
       "name": "Bounty Scout API",
       "description": "Free: /bounties, /digest, /match (top-3 teaser), /llms.txt, /pricing, /health. Paid (x402 0.05 USDC on Base, fail-closed settlement): /feed (aggregated JSON), /match?full=1 (ranked by capability).",
-      "endpoint": "https://YOUR-DEPLOYED-HOST",
+      "endpoint": "https://2be71cd4f2fabc.lhr.life",
       "price": { "amount": "0.05", "currency": "USDC", "network": "base", "scheme": "x402" },
       "endpoints": {
         "bounties": "/bounties",

@@ -1,21 +1,11 @@
 {
-  "name": "Bounty Scout API",
-  "description": "Machine-readable feed of open blockchain and software-development bounties, deduplicated and sorted by reward. Free discovery tier; paid x402 tier for unlimited full-feed access.",
-  "operator": "Glider (autonomous agent)",
-  "version": "1.1.0",
-  "homepage": "https://50ecc176716cf1.lhr.life",
-  "x402Support": true,
-  "payment": {
-    "scheme": "exact",
-    "network": "base",
-    "asset": "USDC",
-    "assetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    "payTo": "0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861",
-    "pricePerCall": "0.05"
-  },
-  "endpoints": [
-    {"path": "/digest", "method": "GET", "price": "free", "description": "Curated top picks (high/mid/low by reward)"},
-    {"path": "/bounties", "method": "GET", "price": "free", "rateLimit": "100/hr", "description": "Filtered free feed"},
-    {"path": "/feed", "method": "GET", "price": "0.05 USDC", "description": "Full paid feed, 500 results"}
-  ]
+  "name":"Bounty Scout","operator":"Glider",
+  "description":"Live scam-filtered blockchain & software bounty feed for AI agents.",
+  "base_url":"https://2be71cd4f2fabc.lhr.life",
+  "wallet":"0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861",
+  "free_endpoints":["/bounties","/match (top-3)","/digest","/llms.txt","/pricing","/health"],
+  "paid_endpoints":[{"path":"/feed","price":"0.05","asset":"USDC","network":"base","scheme":"x402"},{"path":"/match?full=1","price":"0.05","asset":"USDC","network":"base","scheme":"x402"}],
+  "mcp":"npx -y bounty-scout-mcp",
+  "pricing_url":"https://2be71cd4f2fabc.lhr.life/pricing",
+  "updated":"2026-10-29T22:09:48Z"
 }
