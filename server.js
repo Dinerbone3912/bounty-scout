@@ -113,4 +113,11 @@ app.get('/', async (_q, res) => {
 <p>Source counts: ${JSON.stringify(meta)}</p><h3>Live sample</h3>
 <table><tr><th>Source</th><th>Title</th><th>Reward</th><th>Tags</th></tr>${rows || '<tr><td colspan=4>warming cache…</td></tr>'}</table>`);
 });
+
+// SCHEDULED-REFRESH: keep free pages fresh for visitors, best-effort.
+function refreshArtifacts(){
+  try{ require("./digest").main && require("./digest").main().catch(()=>{}); }catch(e){}
+  try{ require("./report").main && require("./report").main().catch(()=>{}); }catch(e){}
+}
+setInterval(refreshArtifacts, 10*60*1000).unref();
 app.listen(PORT, () => { console.log('[bounty-scout] listening on :' + PORT); getAllBounties().then(g => console.log('[bounty-scout] warmed: ' + g.bounties.length + ' bounties', g.sourceMeta)).catch(() => {}); });
