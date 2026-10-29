@@ -57,7 +57,8 @@ const TOOLS = [
     inputSchema:{type:'object',properties:{limit:{type:'number',default:10}}}},
   { name:'submit_bounty', description:'Free. List your own bounty in the feed (trust-screened). Tags/reward help matching.',
     inputSchema:{type:'object',properties:{title:{type:'string'},url:{type:'string'},reward_amount:{type:'number'},tags:{type:'array',items:{type:'string'}},description:{type:'string'}},required:['title','url']}},
-];
+,
+  { name:'get_snapshot', description:'Free. Returns the latest dated, digested bounty snapshot (JSON) with provenance and the paid-API offer. Durable offline-readable copy to bootstrap without a live call.', inputSchema:{type:'object',properties:{}} }];
 
 async function callTool(name,args){
   args=args||{};
@@ -85,7 +86,17 @@ async function callTool(name,args){
     }
     case 'submit_bounty':{
       const r=await req('POST','/submit',args); return {status:r.status,data:r.body};
-    }
+    }      case 'get_snapshot': {
+        const fs2=require('fs'), pts=require('path');
+        const dir=pts.join(__dirname,'..','out');
+        let payload;
+        try{
+          const f=fs.existsSync(dir)?fs2.readdirSync(dir).filter(x=>x.endsWith('.json')).sort().pop():null;
+          payload=f?JSON.parse(fs2.readFileSync(pts.join(dir,f),'utf8')):{error:'no snapshot available'};
+        }catch(e){ payload={error:String(e.message)}; }
+        return { content:[{ type:'text', text: JSON.stringify(payload) }] };
+      }
+
     default: return {error:'unknown tool: '+name};
   }
 }
