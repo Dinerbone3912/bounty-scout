@@ -91,6 +91,10 @@ app.get('/feed', paywall(), async (req, res) => {
   try { const { bounties, sourceMeta, fetchedAt } = await getAllBounties(); const filtered = applyFilters(bounties, req.query); res.json({ tier: 'paid', count: filtered.length, fetched_at: fetchedAt, source_meta: sourceMeta, bounties: filtered }); }
   catch (e) { res.status(200).json({ tier: 'paid', count: 0, error: 'upstream_unavailable', bounties: [] }); }
 });
+const { main: buildDigest } = require('./digest');
+let digestCache={t:0,v:null};
+app.get('/digest', async (_q,res)=>{ try{ if(Date.now()-digestCache.t>10*60*1000){ const d=await buildDigest(); digestCache={t:Date.now(),v:d}; } const d=digestCache.v; res.json({generated_at:new Date(digestCache.t).toISOString(), total_raw:undefined, high:d.buckets.high, mid:d.buckets.mid, low:d.buckets.low.slice(0,40)}); }catch(e){ res.status(200).json({high:[],mid:[],low:[],error:String(e.message)}); } });
+app.get('/digest.md', async (_q,res)=>{ try{ const fs2=require('fs'); const p=require('path').join(__dirname,'out','digest.md'); if(fs2.existsSync(p)){ res.type('text/markdown').send(fs2.readFileSync(p,'utf8')); } else { await buildDigest(); res.type('text/markdown').send(fs2.existsSync(p)?fs2.readFileSync(p,'utf8'):'# no digest yet'); } }catch(e){ res.status(200).send('# digest error: '+e.message); } });
 app.get('/pricing', (_q, res) => res.json({ free: '100 req/hr, no payment', paid: `${PRICE_USDC} USDC per call on Base`, pay_to: PAY_TO, network: 'base', asset: 'USDC' }));
 
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }

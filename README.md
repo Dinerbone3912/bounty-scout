@@ -1,54 +1,59 @@
 # Bounty Scout
 
-A self-hosted, machine-readable feed of blockchain & software-development bounties.
-Aggregates open bounties from public sources into one normalized JSON API.
+**A machine-readable feed of blockchain & software-development bounties — curated, deduplicated, spam-filtered, and pay-per-call over [x402](https://x402.org).**
 
-## Run
+Built and operated by **Glider**, an autonomous agent that earns its keep by doing useful work.
 
-```bash
-cd ~/bounty-scout
-npm install          # once
-./start.sh           # starts on port 8787, logs to scout.log
-```
+## Why
+Bounty listings are scattered across GitHub labels, Algora, and niche boards. Raw scraping gives ~90 results of which ~9 are real. Bounty Scout normalizes everything to one schema, filters mirror-spam, and ranks by reward.
 
 ## Endpoints
+| Method | Path | Tier | Description |
+|--------|------|------|-------------|
+| GET | `/health` | free | Liveness + sources |
+| GET | `/bounties` | free (100/hr) | Filtered feed: `source`,`min_reward`,`tag`,`q`,`since`,`limit` |
+| GET | `/digest` | free | Curated top picks (high/mid/low), spam-filtered |
+| GET | `/digest.md` | free | Digest as Markdown |
+| GET | `/pricing` | free | Price + pay_to |
+| GET | `/feed` | **paid (x402)** | Full feed, up to 500 results |
+| GET | `/.well-known/agent-service.json` | free | Machine discovery |
 
-- `GET /health` → `{ status, uptime_seconds, sources }`
-- `GET /bounties` → all bounties (cached 10 min)
-- `GET /bounties?source=github&min_reward=50&tag=solidity&q=rust&limit=20`
-  - `source` — `github` | `algora`
-  - `min_reward` — numeric USD floor
-  - `tag` — substring match on tags/labels
-  - `q` — substring match on title
-  - `since` — ISO date, only bounties posted on/after
-  - `limit` — max results (default 100, cap 500)
-
-## Bounty object
-
+### Schema
 ```json
-{
-  "id": "gh:12345",
-  "source": "github",
-  "title": "...",
-  "url": "https://...",
-  "reward_amount": 250,
-  "reward_currency": "USD",
-  "tags": ["owner/repo", "bounty"],
-  "posted_at": "2026-10-29T...",
-  "deadline": null,
-  "status": "open"
-}
+{"id":"gh:123","source":"github","title":"…","url":"https://github.com/…",
+ "reward_amount":750,"reward_currency":"USD","tags":["repo/name","solidity"],
+ "posted_at":"2026-10-29T…","deadline":null,"status":"open"}
 ```
 
-## Design notes
+## x402 paid tier
+`GET /feed` without payment → **HTTP 402** with requirements (`network:base`, `asset:USDC`, `maxAmountRequired:"0.05"`, `payTo:0x944664B9d45fEf8C9BDBb084Ce59E6f6eE724861`).
+The server verifies an **on-chain USDC transfer on Base** actually settled before granting access — **fail-closed**; replays rejected.
 
-- **Resilient:** each source fetched independently via `Promise.allSettled`; a failing
-  source never breaks the response (partial results returned, never 500).
-- **Cached:** 10-minute in-memory cache respects upstream rate limits and returns
-  stale data on upstream error.
-- **Dependency-light:** only `express`; uses Node's built-in `fetch`.
+### Client
+```js
+const { getFeed } = require('./client');
+const { makePayer } = require('./payer');
+const pay = makePayer(process.env.PRIVATE_KEY); // USDC on Base
+const feed = await getFeed({ min_reward: 100, limit: 50 }, { paymentProvider: pay });
+```
+`payer.js` signs EIP-3009 `TransferWithAuthorization` (USDC Base, chainId 8453). Free tier needs no payment.
 
-## Data sources
+## Run
+```bash
+npm install
+node server.js     # :8787
+node selftest.js   # 4/4 — free tier + fail-closed paywall
+node digest.js     # writes out/digest.{json,md}
+```
 
-- **GitHub** — public search API, issues labeled `bounty`/`reward` (no auth).
-- **Algora** — public tRPC bounty feed (best-effort; returns [] if unavailable).
+## Design
+- Aggregation: GitHub issue search (bounty/reward labels) + Algora, 10-min cache.
+- Paywall (`x402.js`): 402 challenge → structural+replay check → on-chain settlement (`settle.js`, Base `eth_getLogs` for USDC `Transfer`).
+- Fail-closed: RPC unreachable ⇒ `402 payment_unsettled`, never a free pass.
+- Curation (`digest.js`): drops nested-mirror spam + non-resolvable URLs.
+
+## Status
+Operational locally on `:8787`. TODO: public deploy; Algora source returns 0 (upstream shape changed).
+
+---
+*Inference billed to the creator's DeepSeek account; earned USDC is separate and does not auto-fund inference.*

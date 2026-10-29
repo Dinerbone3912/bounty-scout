@@ -1,0 +1,170 @@
+{
+  "generated_at": "2026-10-29T21:29:01.348Z",
+  "source": "http://localhost:8787",
+  "total_raw": 90,
+  "total_actionable": 9,
+  "buckets": {
+    "high": [
+      {
+        "id": "gh:5878909731",
+        "source": "github",
+        "title": "[$750] WebGL renderer for the 3D memory graph: 50,000 nodes at interactive frame rates",
+        "url": "https://github.com/oll4com/spaceapp/issues/62",
+        "reward_amount": 750,
+        "reward_currency": "USD",
+        "tags": [
+          "oll4com/spaceapp",
+          "enhancement",
+          "help wanted",
+          "💎 Bounty"
+        ],
+        "posted_at": "2026-10-16T05:30:26Z",
+        "deadline": null,
+        "status": "open"
+      },
+      {
+        "id": "gh:5878910506",
+        "source": "github",
+        "title": "[$600] Support rootless Podman as a container engine in the run-spaceapp launcher",
+        "url": "https://github.com/oll4com/spaceapp/issues/63",
+        "reward_amount": 600,
+        "reward_currency": "USD",
+        "tags": [
+          "oll4com/spaceapp",
+          "enhancement",
+          "help wanted",
+          "💎 Bounty"
+        ],
+        "posted_at": "2026-10-16T05:30:31Z",
+        "deadline": null,
+        "status": "open"
+      },
+      {
+        "id": "gh:5878909492",
+        "source": "github",
+        "title": "[$600] Export worker and workflow spans over OTLP: one trace from API request to every Temporal activity",
+        "url": "https://github.com/oll4com/spaceapp/issues/61",
+        "reward_amount": 600,
+        "reward_currency": "USD",
+        "tags": [
+          "oll4com/spaceapp",
+          "enhancement",
+          "help wanted",
+          "💎 Bounty"
+        ],
+        "posted_at": "2026-10-16T05:30:25Z",
+        "deadline": null,
+        "status": "open"
+      },
+      {
+        "id": "gh:5878910962",
+        "source": "github",
+        "title": "[$450] One command to run the full SpaceApp stack from source for contributors",
+        "url": "https://github.com/oll4com/spaceapp/issues/65",
+        "reward_amount": 450,
+        "reward_currency": "USD",
+        "tags": [
+          "oll4com/spaceapp",
+          "enhancement",
+          "help wanted",
+          "💎 Bounty"
+        ],
+        "posted_at": "2026-10-16T05:30:34Z",
+        "deadline": null,
+        "status": "open"
+      },
+      {
+        "id": "gh:5878910737",
+        "source": "github",
+        "title": "[$400] Per-service container images: ship each image only the code and dependencies it runs",
+        "url": "https://github.com/oll4com/spaceapp/issues/64",
+        "reward_amount": 400,
+        "reward_currency": "USD",
+        "tags": [
+          "oll4com/spaceapp",
+          "enhancement",
+          "help wanted",
+          "💎 Bounty"
+        ],
+        "posted_at": "2026-10-16T05:30:32Z",
+        "deadline": null,
+        "status": "open"
+      },
+      {
+        "id": "gh:5878908647",
+        "source": "github",
+        "title": "[$400] Test every Temporal workflow on a real time-skipping test server and gate replay determinism in CI",
+        "url": "https://github.com/oll4com/spaceapp/issues/60",
+        "reward_amount": 400,
+        "reward_currency": "USD",
+        "tags": [
+          "oll4com/spaceapp",
+          "enhancement",
+          "help wanted",
+          "💎 Bounty"
+        ],
+        "posted_at": "2026-10-16T05:30:20Z",
+        "deadline": null,
+        "status": "open"
+      }
+    ],
+    "mid": [
+      {
+        "id": "gh:6072952525",
+        "source": "github",
+        "title": "💰 Bounty Seguro ($$250): [Bounty] Preserve RFC 7239 `Forwarded` host author",
+        "url": "https://github.com/alfrexo95/bounty-bot/issues/53",
+        "reward_amount": 250,
+        "reward_currency": "USD",
+        "tags": [
+          "alfrexo95/bounty-bot",
+          "bounty",
+          "escrow"
+        ],
+        "posted_at": "2026-10-28T05:03:16Z",
+        "deadline": null,
+        "status": "open"
+      }
+    ],
+    "low": [
+      {
+        "id": "gh:4870201132",
+        "source": "github",
+        "title": "[aLexzzz430/Cognitive-OS] [ Bounty $3k ] [ Research ] Collect and compare AI-generated",
+        "url": "https://github.com/Vikingr2023/awesome-agent-bounties/issues/167",
+        "reward_amount": 3,
+        "reward_currency": "USD",
+        "tags": [
+          "Vikingr2023/awesome-agent-bounties",
+          "bounty-hunter",
+          "external-mirror",
+          "bounty",
+          "reward",
+          "research"
+        ],
+        "posted_at": "2026-07-13T03:48:37Z",
+        "deadline": null,
+        "status": "open"
+      },
+      {
+        "id": "gh:4870177173",
+        "source": "github",
+        "title": "[aLexzzz430/Cognitive-OS] [ Bounty $3k ] [ Research ] Collect and compare AI-generated",
+        "url": "https://github.com/Vikingr2023/awesome-agent-bounties/issues/52",
+        "reward_amount": 3,
+        "reward_currency": "USD",
+        "tags": [
+          "Vikingr2023/awesome-agent-bounties",
+          "bounty-hunter",
+          "external-mirror",
+          "bounty",
+          "reward",
+          "research"
+        ],
+        "posted_at": "2026-07-13T03:43:20Z",
+        "deadline": null,
+        "status": "open"
+      }
+    ]
+  }
+}
