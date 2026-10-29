@@ -48,14 +48,7 @@ async function fetchGithub() {
   }
   return out;
 }
-async function fetchAlgora() {
-  try {
-    const data = await jget('https://console.algora.io/api/trpc/bounty.getAll');
-    let rows = data; try { rows = data.result.data.json; } catch (_) {}
-    if (!Array.isArray(rows)) rows = [];
-    return rows.slice(0, 60).map(b => ({ id: 'alg:' + b.id, source: 'algora', title: b.title || (b.issue && b.issue.title) || 'Algora bounty', url: b.url || (b.issue && b.issue.url) || ('https://algora.io/bounties/' + b.id), reward_amount: Number((b.reward && b.reward.amount) || b.amount || 0) || null, reward_currency: (b.reward && b.reward.currency) || b.currency || 'USD', tags: (b.tags || (b.issue && b.issue.labels) || []).map(t => (typeof t === 'string' ? t : t.name)).filter(Boolean), posted_at: b.created_at || b.createdAt || null, deadline: b.deadline || null, status: b.status || 'open' }));
-  } catch (e) { return []; }
-}
+const { fetchAlgora } = require("./algora");
 const SOURCES = { github: fetchGithub, algora: fetchAlgora };
 async function getAllBounties() {
   return cached('all', CACHE_TTL_MS, async () => {
